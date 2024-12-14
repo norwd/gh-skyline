@@ -9,39 +9,47 @@ import (
 
 func TestGenerateASCII(t *testing.T) {
 	tests := []struct {
-		name          string
-		grid          [][]types.ContributionDay
-		user          string
-		year          int
-		includeHeader bool
-		wantErr       bool
+		name            string
+		grid            [][]types.ContributionDay
+		user            string
+		year            int
+		includeHeader   bool
+		wantErr         bool
 	}{
 		{
-			name:          "empty grid",
-			grid:          [][]types.ContributionDay{},
-			user:          "testuser",
-			year:          2023,
-			includeHeader: false,
-			wantErr:       true,
+			name:            "empty grid",
+			grid:            [][]types.ContributionDay{},
+			user:            "testuser",
+			year:            2023,
+			includeHeader:   false,
+			wantErr:         true,
 		},
 		{
-			name:          "valid grid",
-			grid:          makeTestGrid(3, 7),
-			user:          "testuser",
-			year:          2023,
-			includeHeader: false,
-			wantErr:       false,
+			name:            "valid grid",
+			grid:            makeTestGrid(3, 7),
+			user:            "testuser",
+			year:            2023,
+			includeHeader:   false,
+			wantErr:         false,
 		},
+        {
+            name:            "no header",
+            grid:            makeTestGrid(3, 7),
+            user:            "testuser",
+            year:            2023,
+            includeHeader:   false,
+            wantErr:         false,
+        },
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := GenerateASCII(tt.grid, tt.user, tt.year, tt.includeHeader)
+			result, err := GenerateASCII(tt.grid, tt.user, tt.year, tt.includeHeader, tt.includeHeader)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GenerateASCII() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantErr {
+			if !tt.wantErr && tt.includeHeader {
 				// Existing validation code...
 				if !strings.Contains(result, "testuser") {
 					t.Error("Generated ASCII should contain username")
@@ -52,7 +60,21 @@ func TestGenerateASCII(t *testing.T) {
 				if !strings.Contains(result, string(EmptyBlock)) {
 					t.Error("Generated ASCII should contain empty blocks")
 				}
+                if !strings.Contains(result, HeaderTemplate) {
+                    t.Error("Generated ASCII should contain header")
+                }
 			}
+            if !tt.wantErr && !tt.includeHeader {
+                if strings.Contains(result, "testuser") {
+                    t.Error("Generated ASCII should exclude username when requested")
+                }
+                if strings.Contains(result, "2023") {
+                    t.Error("Generated ASCII should exclude year when requested")
+                }
+                if strings.Contains(result, HeaderTemplate) {
+                    t.Error("Generated ASCII should exclude header when requested")
+                }
+            }
 		})
 	}
 }
