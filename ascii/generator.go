@@ -74,12 +74,12 @@ func GenerateASCII(contributionGrid [][]types.ContributionDay, username string, 
 		buffer.WriteRune('\n')
 	}
 
-    if includeUserInfo {
-	    // Add centered user info below
-	    buffer.WriteString("\n")
-	    buffer.WriteString(centerText(username))
-	    buffer.WriteString(centerText(fmt.Sprintf("%d", year)))
-    }
+	if includeUserInfo {
+		// Add centered user info below
+		buffer.WriteString("\n")
+		buffer.WriteString(centerText(username))
+		buffer.WriteString(centerText(fmt.Sprintf("%d", year)))
+	}
 
 	return buffer.String(), nil
 }

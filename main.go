@@ -204,18 +204,18 @@ func generateSkyline(startYear, endYear int, targetUser string, full bool) error
 		}
 	}
 
-    if !artOnly {
-	    // Generate filename
-	    outputPath := generateOutputFilename(targetUser, startYear, endYear)
-    
-	    // Generate the STL file
-	    if len(allContributions) == 1 {
-		    return stl.GenerateSTL(allContributions[0], outputPath, targetUser, startYear)
-	    }
-	    return stl.GenerateSTLRange(allContributions, outputPath, targetUser, startYear, endYear)
-    }
+	if !artOnly {
+		// Generate filename
+		outputPath := generateOutputFilename(targetUser, startYear, endYear)
 
-    return nil
+		// Generate the STL file
+		if len(allContributions) == 1 {
+			return stl.GenerateSTL(allContributions[0], outputPath, targetUser, startYear)
+		}
+		return stl.GenerateSTLRange(allContributions, outputPath, targetUser, startYear, endYear)
+	}
+
+	return nil
 }
 
 // Variable for client initialization - allows for testing
