@@ -107,7 +107,7 @@ func init() {
 	rootCmd.Flags().BoolVarP(&full, "full", "f", false, "Generate contribution graph from join year to current year")
 	rootCmd.Flags().BoolVarP(&debug, "debug", "d", false, "Enable debug logging")
 	rootCmd.Flags().BoolVarP(&web, "web", "w", false, "Open GitHub profile (authenticated or specified user).")
-	rootCmd.Flags().BoolVar(&artOnly, "art-only", false, "Generate only ascii art and suppress skyline header.")
+	rootCmd.Flags().BoolVar(&artOnly, "art-only", false, "Generate only ASCII preview")
 	rootCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path (optional)")
 }
 
