@@ -178,7 +178,7 @@ func generateSkyline(startYear, endYear int, targetUser string, full bool) error
 		allContributions = append(allContributions, contributions)
 
 		// Generate ASCII art for each year
-		asciiArt, err := ascii.GenerateASCII(contributions, targetUser, year, (year == startYear) && !artOnly)
+		asciiArt, err := ascii.GenerateASCII(contributions, targetUser, year, (year == startYear) && !artOnly, !artOnly)
 		if err != nil {
 			if warnErr := log.Warning("Failed to generate ASCII preview: %v", err); warnErr != nil {
 				return warnErr
