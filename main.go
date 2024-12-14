@@ -178,7 +178,7 @@ func generateSkyline(startYear, endYear int, targetUser string, full bool) error
 		allContributions = append(allContributions, contributions)
 
 		// Generate ASCII art for each year
-		asciiArt, err := ascii.GenerateASCII(contributions, targetUser, year, year == startYear)
+		asciiArt, err := ascii.GenerateASCII(contributions, targetUser, year, (year == startYear) && !artOnly)
 		if err != nil {
 			if warnErr := log.Warning("Failed to generate ASCII preview: %v", err); warnErr != nil {
 				return warnErr
@@ -204,14 +204,18 @@ func generateSkyline(startYear, endYear int, targetUser string, full bool) error
 		}
 	}
 
-	// Generate filename
-	outputPath := generateOutputFilename(targetUser, startYear, endYear)
+    if !artOnly {
+	    // Generate filename
+	    outputPath := generateOutputFilename(targetUser, startYear, endYear)
+    
+	    // Generate the STL file
+	    if len(allContributions) == 1 {
+		    return stl.GenerateSTL(allContributions[0], outputPath, targetUser, startYear)
+	    }
+	    return stl.GenerateSTLRange(allContributions, outputPath, targetUser, startYear, endYear)
+    }
 
-	// Generate the STL file
-	if len(allContributions) == 1 {
-		return stl.GenerateSTL(allContributions[0], outputPath, targetUser, startYear)
-	}
-	return stl.GenerateSTLRange(allContributions, outputPath, targetUser, startYear, endYear)
+    return nil
 }
 
 // Variable for client initialization - allows for testing
