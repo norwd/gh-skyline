@@ -15,6 +15,7 @@ const (
 	NetworkError    ErrorType = "NETWORK"    // Network communication errors
 	GraphQLError    ErrorType = "GRAPHQL"    // GitHub GraphQL API errors
 	STLError        ErrorType = "STL"        // STL file generation errors
+	ConfigError     ErrorType = "CONFIG"     // Configuration errors
 )
 
 // SkylineError provides structured error information including type and context
