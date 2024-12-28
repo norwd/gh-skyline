@@ -121,19 +121,19 @@ func TestGetBlock(t *testing.T) {
 }
 
 // TestGenerateASCIIZeroContributions tests the GenerateASCII function with zero contributions.
-// It verifies that the skyline consists of empty blocks and appropriately handles the header.
+// It verifies that the skyline consists of empty blocks and appropriately handles the header and footer.
 func TestGenerateASCIIZeroContributions(t *testing.T) {
 	tests := []struct {
-		name          string
-		includeHeader bool
+		name                   string
+		includeHeaderAndFooter bool
 	}{
 		{
-			name:          "Zero contributions without header",
-			includeHeader: false,
+			name:                   "Zero contributions without header",
+			includeHeaderAndFooter: false,
 		},
 		{
-			name:          "Zero contributions with header",
-			includeHeader: true,
+			name:                   "Zero contributions with header",
+			includeHeaderAndFooter: true,
 		},
 	}
 
@@ -148,7 +148,7 @@ func TestGenerateASCIIZeroContributions(t *testing.T) {
 			}
 
 			// Generate ASCII art
-			result, err := GenerateASCII(grid, "testuser", 2023, tt.includeHeader)
+			result, err := GenerateASCII(grid, "testuser", 2023, tt.includeHeaderAndFooter, tt.includeHeaderAndFooter)
 			if err != nil {
 				t.Fatalf("GenerateASCII() returned an error: %v", err)
 			}
@@ -157,7 +157,7 @@ func TestGenerateASCIIZeroContributions(t *testing.T) {
 
 			// Determine the starting line of the skyline
 			skylineStart := 0
-			if tt.includeHeader {
+			if tt.includeHeaderAndFooter {
 				// Assuming HeaderTemplate has a fixed number of lines
 				headerLines := strings.Count(HeaderTemplate, "\n")
 				skylineStart = headerLines + 1 // +1 for the additional newline after header
