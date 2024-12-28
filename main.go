@@ -124,7 +124,8 @@ func formatYearRange(startYear, endYear int) string {
 	if startYear == endYear {
 		return fmt.Sprintf("%d", startYear)
 	}
-	return fmt.Sprintf("%02d-%02d", startYear%100, endYear%100)
+	// Use YYYY-YY format for multi-year ranges
+	return fmt.Sprintf("%04d-%02d", startYear, endYear%100)
 }
 
 // generateOutputFilename creates a consistent filename for the STL output
