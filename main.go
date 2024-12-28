@@ -11,7 +11,6 @@ import (
 
 	"github.com/cli/go-gh/v2/pkg/api"
 	"github.com/cli/go-gh/v2/pkg/browser"
-	"github.com/cli/go-gh/v2/pkg/config"
 	"github.com/github/gh-skyline/ascii"
 	"github.com/github/gh-skyline/errors"
 	"github.com/github/gh-skyline/github"
@@ -291,16 +290,6 @@ func openGitHubProfile(targetUser string, client GitHubClientInterface, b Browse
 		targetUser = username
 	}
 
-	cfg, err := config.Read(nil)
-	if err != nil {
-		return errors.New(errors.ConfigError, "failed to read gh config", err)
-	}
-
-	hostname, _ := cfg.Get([]string{"host"})
-	if hostname == "" {
-		hostname = "github.com"
-	}
-
-	profileURL := fmt.Sprintf("https://%s/%s", hostname, targetUser)
+	profileURL := fmt.Sprintf("https://github.com/%s", targetUser)
 	return b.Browse(profileURL)
 }
