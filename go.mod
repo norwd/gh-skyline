@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.23.3
 
 require (
-	github.com/cli/go-gh/v2 v2.11.1
+	github.com/cli/go-gh/v2 v2.11.2
 	github.com/fogleman/gg v1.3.0
 	github.com/spf13/cobra v1.8.1
 )
