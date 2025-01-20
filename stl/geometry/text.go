@@ -19,15 +19,6 @@ type renderConfig struct {
 	depth      float64
 }
 
-// TextConfig holds parameters for text rendering
-type textRenderConfig struct {
-	renderConfig
-	text          string
-	contextWidth  int
-	contextHeight int
-	fontSize      float64
-}
-
 // ImageConfig holds parameters for image rendering
 type imageRenderConfig struct {
 	renderConfig
@@ -36,29 +27,22 @@ type imageRenderConfig struct {
 }
 
 const (
-	imagePosition  = 0.025
-	usernameOffset = -0.01
-	yearPosition   = 0.77
+	skylineFaceWidth  = 142.5 // millimeters?
+	skylineFaceHeight = 10.0 // millimeters?
+	skylineResolutionWidth = 2000 // voxels
 
-	defaultContextWidth  = 800
-	defaultContextHeight = 200
-	textVoxelSize        = 1.0
-	textDepthOffset      = 2.0
-	frontEmbedDepth      = 1.5
-
-	usernameContextWidth  = 1000
-	usernameContextHeight = 200
-	usernameFontSize      = 48.0
-	usernameZOffset       = 0.7
-
-	yearContextWidth  = 800
-	yearContextHeight = 200
-	yearFontSize      = 56.0
-	yearZOffset       = 0.4
-
-	defaultImageHeight = 9.0
-	defaultImageScale  = 0.8
-	imageLeftMargin    = 10.0
+	logoPosition  = 0.025
+	logoHeight = 9.0
+	logoScale  = 0.8
+	logoLeftMargin    = 10.0
+	
+	voxelDepth      = 1.0
+	
+	usernameFontSize     = 120.0
+	usernameLeftOffset   = 0.1
+	
+	yearFontSize         = 100.0
+	yearLeftOffset       = 0.85
 )
 
 // Create3DText generates 3D text geometry for the username and year.
@@ -67,40 +51,20 @@ func Create3DText(username string, year string, innerWidth, baseHeight float64) 
 		username = "anonymous"
 	}
 
-	usernameConfig := textRenderConfig{
-		renderConfig: renderConfig{
-			startX:     innerWidth * usernameOffset,
-			startY:     -textDepthOffset / 2,
-			startZ:     baseHeight * usernameZOffset,
-			voxelScale: textVoxelSize,
-			depth:      frontEmbedDepth,
-		},
-		text:          username,
-		contextWidth:  usernameContextWidth,
-		contextHeight: usernameContextHeight,
-		fontSize:      usernameFontSize,
-	}
-
-	yearConfig := textRenderConfig{
-		renderConfig: renderConfig{
-			startX:     innerWidth * yearPosition,
-			startY:     -textDepthOffset / 2,
-			startZ:     baseHeight * yearZOffset,
-			voxelScale: textVoxelSize * 0.75,
-			depth:      frontEmbedDepth,
-		},
-		text:          year,
-		contextWidth:  yearContextWidth,
-		contextHeight: yearContextHeight,
-		fontSize:      yearFontSize,
-	}
-
-	usernameTriangles, err := renderText(usernameConfig)
+	usernameTriangles, err := renderText(
+		username,
+		usernameLeftOffset,
+		usernameFontSize,
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	yearTriangles, err := renderText(yearConfig)
+	yearTriangles, err := renderText(
+		year,
+		yearLeftOffset,
+		yearFontSize,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -108,9 +72,22 @@ func Create3DText(username string, year string, innerWidth, baseHeight float64) 
 	return append(usernameTriangles, yearTriangles...), nil
 }
 
-// renderText generates 3D geometry for the given text configuration.
-func renderText(config textRenderConfig) ([]types.Triangle, error) {
-	dc := gg.NewContext(config.contextWidth, config.contextHeight)
+// renderText places text on the face of a skyline, offset from the left and vertically-aligned.
+// The function takes the text to be displayed, offset from left, and font size.
+// It returns an array of types.Triangle.
+//
+// Parameters:
+//   text (string): The text to be displayed on the skyline's front face.
+//   leftOffsetPercent (float64): The percentage distance from the left to start displaying the text.
+//   fontSize (float64): How large to make the text. Note: It scales with the skylineResolutionWidth.
+//
+// Returns:
+//   ([]types.Triangle, error): A slice of triangles representing text.
+func renderText(text string, leftOffsetPercent float64, fontSize float64) ([]types.Triangle, error) {
+	// Create a rendering context for the face of the skyline
+	faceWidthRes := skylineResolutionWidth
+	faceHeightRes := int(float64(faceWidthRes) * skylineFaceHeight/skylineFaceWidth)
+	dc := gg.NewContext(faceWidthRes, faceHeightRes)
 
 	// Get temporary font file
 	fontPath, cleanup, err := writeTempFont(PrimaryFont)
@@ -122,30 +99,33 @@ func renderText(config textRenderConfig) ([]types.Triangle, error) {
 		}
 	}
 
-	if err := dc.LoadFontFace(fontPath, config.fontSize); err != nil {
+	if err := dc.LoadFontFace(fontPath, fontSize); err != nil {
 		return nil, errors.New(errors.IOError, "failed to load font", err)
 	}
 
 	dc.SetRGB(0, 0, 0)
 	dc.Clear()
 	dc.SetRGB(1, 1, 1)
-	dc.DrawStringAnchored(config.text, float64(config.contextWidth)/8, float64(config.contextHeight)/2, 0.0, 0.5)
 
 	var triangles []types.Triangle
 
-	for y := 0; y < config.contextHeight; y++ {
-		for x := 0; x < config.contextWidth; x++ {
-			if isPixelActive(dc, x, y) {
-				xPos := config.startX + float64(x)*config.voxelScale/8
-				zPos := config.startZ - float64(y)*config.voxelScale/8
+	// Draw pixelated text in image at desired location
+	dc.DrawStringAnchored(
+		text,
+		float64(faceWidthRes)*leftOffsetPercent, // Offset from left
+		float64(faceHeightRes)*0.5, // Offset from top
+		0.0, // Left aligned
+		0.5, // Vertically aligned
+	)
 
-				voxel, err := CreateCube(
-					xPos,
-					config.startY,
-					zPos,
-					config.voxelScale/2,
-					config.depth,
-					config.voxelScale/2,
+	// Transfer image pixels onto face of skyline as voxels
+	for x := 0; x < faceWidthRes; x++ {
+		for y := 0; y < faceHeightRes; y++ {
+			if isPixelActive(dc, x, y) {
+				voxel, err := createVoxelOnFace(
+					float64(x),
+					float64(y),
+					voxelDepth,
 				)
 				if err != nil {
 					return nil, errors.New(errors.STLError, "failed to create cube", err)
@@ -161,6 +141,46 @@ func renderText(config textRenderConfig) ([]types.Triangle, error) {
 	return triangles, nil
 }
 
+// createVoxelOnFace creates a voxel on the face of a skyline by generating a cube at the specified coordinates.
+// The function takes in the x, y coordinates and height.
+// It returns a slice of types.Triangle representing the cube and an error if the cube creation fails.
+//
+// Parameters:
+//   x (float64): The x-coordinate on the skyline face (left to right).
+//   y (float64): The y-coordinate on the skyline face (top to bottom).
+//   height (float64): Distance coming out of the face.
+//
+// Returns:
+//   ([]types.Triangle, error): A slice of triangles representing the cube and an error if any.
+func createVoxelOnFace(x float64, y float64, height float64) ([]types.Triangle, error) {
+	// Mapping resolution
+	xResolution := float64(skylineResolutionWidth)
+	yResolution := xResolution * skylineFaceHeight / skylineFaceWidth
+
+	// Pixel size
+	voxelSize := 1.0;
+
+	// Scale coordinate to face resolution
+	x = (x / xResolution) * skylineFaceWidth
+	y = (y / yResolution) * skylineFaceHeight
+	voxelSizeX := (voxelSize / xResolution) * skylineFaceWidth;
+	voxelSizeY := (voxelSize / yResolution) * skylineFaceHeight;
+
+	cube, err := CreateCube(
+		// Location (from top left corner of skyline face)
+		x, // x - Left to right
+		-height, // y - Negative comes out of face. Positive goes into face.
+		-voxelSizeY - y, // z - Bottom to top
+		
+		// Size
+		voxelSizeX, // x length - left to right from specified point
+		height, // thickness - distance coming out of face
+		voxelSizeY, // y length - bottom to top from specified point
+	)
+
+	return cube, err
+}
+
 // GenerateImageGeometry creates 3D geometry from the embedded logo image.
 func GenerateImageGeometry(innerWidth, baseHeight float64) ([]types.Triangle, error) {
 	// Get temporary image file
@@ -171,14 +191,14 @@ func GenerateImageGeometry(innerWidth, baseHeight float64) ([]types.Triangle, er
 
 	config := imageRenderConfig{
 		renderConfig: renderConfig{
-			startX:     innerWidth * imagePosition,
-			startY:     -frontEmbedDepth / 2.0,
+			startX:     innerWidth * logoPosition,
+			startY:     -voxelDepth / 2.0,
 			startZ:     -0.85 * baseHeight,
-			voxelScale: defaultImageScale,
-			depth:      frontEmbedDepth,
+			voxelScale: logoScale,
+			depth:      voxelDepth,
 		},
 		imagePath: imgPath,
-		height:    defaultImageHeight,
+		height:    logoHeight,
 	}
 
 	defer cleanup()
