@@ -35,10 +35,12 @@ const (
 	logoLeftOffset = 0.03 // Percent
 	
 	usernameFontSize     = 120.0
+	usernameJustification= "left" // "left", "center", "right"
 	usernameLeftOffset   = 0.1 // Percent
 	
 	yearFontSize         = 100.0
-	yearLeftOffset       = 0.85 // Percent
+	yearJustification	= "right" // "left", "center", "right"
+	yearLeftOffset       = 0.97 // Percent
 )
 
 // Create3DText generates 3D text geometry for the username and year.
@@ -49,6 +51,7 @@ func Create3DText(username string, year string, baseWidth float64, baseHeight fl
 
 	usernameTriangles, err := renderText(
 		username,
+		usernameJustification,
 		usernameLeftOffset,
 		usernameFontSize,
 		baseWidth,
@@ -60,6 +63,7 @@ func Create3DText(username string, year string, baseWidth float64, baseHeight fl
 
 	yearTriangles, err := renderText(
 		year,
+		yearJustification,
 		yearLeftOffset,
 		yearFontSize,
 		baseWidth,
@@ -83,7 +87,7 @@ func Create3DText(username string, year string, baseWidth float64, baseHeight fl
 //
 // Returns:
 //   ([]types.Triangle, error): A slice of triangles representing text.
-func renderText(text string, leftOffsetPercent float64, fontSize float64, baseWidth float64, baseHeight float64) ([]types.Triangle, error) {
+func renderText(text string, justification string, leftOffsetPercent float64, fontSize float64, baseWidth float64, baseHeight float64) ([]types.Triangle, error) {
 	// Create a rendering context for the face of the skyline
 	faceWidthRes := baseWidthVoxelResolution
 	faceHeightRes := int(float64(faceWidthRes) * baseHeight/baseWidth)
@@ -110,12 +114,22 @@ func renderText(text string, leftOffsetPercent float64, fontSize float64, baseWi
 	// Draw text on image at desired location
 	var triangles []types.Triangle
 
-	// Draw pixelated text in image at desired location
+	// Convert justification to a number
+	var justificationPercent float64
+	switch justification {
+	case "center":
+		justificationPercent = 0.5
+	case "right":
+		justificationPercent = 1.0
+	default:
+		justificationPercent = 0.0
+	}
+
 	dc.DrawStringAnchored(
 		text,
 		float64(faceWidthRes)*leftOffsetPercent, // Offset from right
 		float64(faceHeightRes)*0.5, // Offset from top
-		0.0, // Left aligned
+		justificationPercent, // Justification (0.0=left, 0.5=center, 1.0=right)
 		0.5, // Vertically aligned
 	)
 
