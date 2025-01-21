@@ -13,10 +13,6 @@ import (
 
 // TestCreate3DText verifies text geometry generation functionality.
 func TestCreate3DText(t *testing.T) {
-	// Skip tests if fonts are not available
-	if _, err := os.Stat(FallbackFont); err != nil {
-		t.Skip("Skipping text tests as font files are not available")
-	}
 
 	t.Run("verify basic text mesh generation", func(t *testing.T) {
 		triangles, err := Create3DText("test", "2023", 100.0, 5.0)
@@ -63,47 +59,37 @@ func TestCreate3DText(t *testing.T) {
 
 // TestRenderText verifies internal text rendering functionality
 func TestRenderText(t *testing.T) {
-	// Skip if fonts not available
-	if _, err := os.Stat(FallbackFont); err != nil {
-		t.Skip("Skipping text tests as font files are not available")
-	}
+	t.Run("verify text renders", func(t *testing.T) {
+		triangles, err := renderText(
+			"Mona", // text
+			"left", // justification
+			0.1, // leftOffsetPercent
+			10.0, // fontSize
+			200.0, // baseWidth
+			10.0, // baseHeight
+		)
 
-	t.Run("verify text config validation", func(t *testing.T) {
-		invalidConfig := textRenderConfig{
-			renderConfig: renderConfig{
-				startX:     0,
-				startY:     0,
-				startZ:     0,
-				voxelScale: 0, // Invalid scale
-				depth:      1,
-			},
-			text:          "test",
-			contextWidth:  100,
-			contextHeight: 100,
-			fontSize:      10,
+		if err != nil {
+			t.Fatalf("renderText failed: %v", err)
 		}
-		_, err := renderText(invalidConfig)
-		if err == nil {
-			t.Error("Expected error for invalid text config")
+		if len(triangles) == 0 {
+			t.Error("Expected non-zero triangles for rendered text")
 		}
 	})
 }
 
 // TestRenderImage verifies internal image rendering functionality
 func TestRenderImage(t *testing.T) {
-	t.Run("verify invalid image path", func(t *testing.T) {
-		config := imageRenderConfig{
-			renderConfig: renderConfig{
-				startX:     0,
-				startY:     0,
-				startZ:     0,
-				voxelScale: 1,
-				depth:      1,
-			},
-			imagePath: "nonexistent.png",
-			height:    10,
-		}
-		_, err := renderImage(config)
+	t.Run("verify invalid image", func(t *testing.T) {
+		_, err := renderImage(
+			"nonexistent.png", // filePath
+			0.5, // scale
+			100.0, // height
+			0.1, // leftOffsetPercent
+			0.1, // topOffsetPercent
+			200.0, // baseWidth
+			10.0, // baseHeight
+		)
 		if err == nil {
 			t.Error("Expected error for invalid image path")
 		}
