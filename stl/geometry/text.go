@@ -30,19 +30,18 @@ const (
 	skylineFaceWidth  = 142.5 // millimeters?
 	skylineFaceHeight = 10.0 // millimeters?
 	skylineResolutionWidth = 2000 // voxels
-
-	logoPosition  = 0.025
-	logoHeight = 9.0
-	logoScale  = 0.8
-	logoLeftMargin    = 10.0
 	
 	voxelDepth      = 1.0
+
+	logoScale      = 0.4
+	logoTopOffset  = 0.15 // Percent
+	logoLeftOffset = 0.03 // Percent
 	
 	usernameFontSize     = 120.0
-	usernameLeftOffset   = 0.1
+	usernameLeftOffset   = 0.1 // Percent
 	
 	yearFontSize         = 100.0
-	yearLeftOffset       = 0.85
+	yearLeftOffset       = 0.85 // Percent
 )
 
 // Create3DText generates 3D text geometry for the username and year.
@@ -189,26 +188,26 @@ func GenerateImageGeometry(innerWidth, baseHeight float64) ([]types.Triangle, er
 		return nil, err
 	}
 
-	config := imageRenderConfig{
-		renderConfig: renderConfig{
-			startX:     innerWidth * logoPosition,
-			startY:     -voxelDepth / 2.0,
-			startZ:     -0.85 * baseHeight,
-			voxelScale: logoScale,
-			depth:      voxelDepth,
-		},
-		imagePath: imgPath,
-		height:    logoHeight,
-	}
-
 	defer cleanup()
 
-	return renderImage(config)
+	return renderImage(
+		imgPath,
+		logoScale,
+		voxelDepth,
+		logoLeftOffset,
+		logoTopOffset,
+	)
 }
 
 // renderImage generates 3D geometry for the given image configuration.
-func renderImage(config imageRenderConfig) ([]types.Triangle, error) {
-	reader, err := os.Open(config.imagePath)
+// func renderImage(config imageRenderConfig) ([]types.Triangle, error) {
+func renderImage(filePath string, scale float64, height float64, leftOffsetPercent float64, topOffsetPercent float64) ([]types.Triangle, error) {
+
+	faceWidthRes := skylineResolutionWidth
+	faceHeightRes := int(float64(faceWidthRes) * skylineFaceHeight/skylineFaceWidth)
+	
+	// Load image from file
+	reader, err := os.Open(filePath)
 	if err != nil {
 		return nil, errors.New(errors.IOError, "failed to open image", err)
 	}
@@ -219,34 +218,30 @@ func renderImage(config imageRenderConfig) ([]types.Triangle, error) {
 			fmt.Println(closeErr)
 		}
 	}()
-
 	img, err := png.Decode(reader)
 	if err != nil {
 		return nil, errors.New(errors.IOError, "failed to decode PNG", err)
 	}
 
+	// Get image size
 	bounds := img.Bounds()
-	width := bounds.Max.X
-	height := bounds.Max.Y
+	logoWidth := bounds.Max.X
+	logoHeight := bounds.Max.Y
 
-	scale := config.height / float64(height)
-
+	// Transfer image pixels onto face of skyline as voxels
 	var triangles []types.Triangle
-
-	for y := height - 1; y >= 0; y-- {
-		for x := 0; x < width; x++ {
+	for x := 0; x < logoWidth; x++ {
+		for y := logoHeight - 1; y >= 0; y-- {
+			// Get pixel color and alpha
 			r, _, _, a := img.At(x, y).RGBA()
-			if a > 32768 && r > 32768 {
-				xPos := config.startX + float64(x)*config.voxelScale*scale
-				zPos := config.startZ + float64(height-1-y)*config.voxelScale*scale
 
-				voxel, err := CreateCube(
-					xPos,
-					config.startY,
-					zPos,
-					config.voxelScale*scale,
-					config.depth,
-					config.voxelScale*scale,
+			// If pixel is active (white) and not fully transparent, create a voxel
+			if a > 32768 && r > 32768 {
+
+				voxel, err := createVoxelOnFace(
+					(leftOffsetPercent * float64(faceWidthRes)) + float64(x)*logoScale,
+					(topOffsetPercent * float64(faceHeightRes)) + float64(y)*logoScale,
+					height,
 				)
 
 				if err != nil {
