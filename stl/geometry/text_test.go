@@ -63,10 +63,10 @@ func TestRenderText(t *testing.T) {
 		triangles, err := renderText(
 			"Mona", // text
 			"left", // justification
-			0.1, // leftOffsetPercent
-			10.0, // fontSize
-			200.0, // baseWidth
-			10.0, // baseHeight
+			0.1,    // leftOffsetPercent
+			10.0,   // fontSize
+			200.0,  // baseWidth
+			10.0,   // baseHeight
 		)
 
 		if err != nil {
@@ -83,12 +83,12 @@ func TestRenderImage(t *testing.T) {
 	t.Run("verify invalid image", func(t *testing.T) {
 		_, err := renderImage(
 			"nonexistent.png", // filePath
-			0.5, // scale
-			100.0, // height
-			0.1, // leftOffsetPercent
-			0.1, // topOffsetPercent
-			200.0, // baseWidth
-			10.0, // baseHeight
+			0.5,               // scale
+			100.0,             // height
+			0.1,               // leftOffsetPercent
+			0.1,               // topOffsetPercent
+			200.0,             // baseWidth
+			10.0,              // baseHeight
 		)
 		if err == nil {
 			t.Error("Expected error for invalid image path")
