@@ -5,7 +5,7 @@ package fixtures
 import (
 	"time"
 
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 // GenerateContributionsResponse creates a mock contributions response

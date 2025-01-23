@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/github/gh-skyline/errors"
-	"github.com/github/gh-skyline/logger"
-	"github.com/github/gh-skyline/stl/geometry"
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/errors"
+	"github.com/github/gh-skyline/internal/logger"
+	"github.com/github/gh-skyline/internal/stl/geometry"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 // GenerateSTL creates a 3D model from GitHub contribution data and writes it to an STL file.

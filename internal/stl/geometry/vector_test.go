@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 // Epsilon is declared in geometry_test.go

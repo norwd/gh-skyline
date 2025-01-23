@@ -5,9 +5,9 @@ import (
 
 	"fmt"
 
-	"github.com/github/gh-skyline/github"
-	"github.com/github/gh-skyline/testutil/fixtures"
-	"github.com/github/gh-skyline/testutil/mocks"
+	"github.com/github/gh-skyline/internal/github"
+	"github.com/github/gh-skyline/internal/testutil/fixtures"
+	"github.com/github/gh-skyline/internal/testutil/mocks"
 )
 
 // MockBrowser implements the Browser interface

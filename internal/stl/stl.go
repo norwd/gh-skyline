@@ -20,9 +20,9 @@ import (
 	"math"
 	"os"
 
-	"github.com/github/gh-skyline/errors"
-	"github.com/github/gh-skyline/logger"
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/errors"
+	"github.com/github/gh-skyline/internal/logger"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 const (

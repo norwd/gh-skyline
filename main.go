@@ -11,12 +11,12 @@ import (
 
 	"github.com/cli/go-gh/v2/pkg/api"
 	"github.com/cli/go-gh/v2/pkg/browser"
-	"github.com/github/gh-skyline/ascii"
-	"github.com/github/gh-skyline/errors"
-	"github.com/github/gh-skyline/github"
-	"github.com/github/gh-skyline/logger"
-	"github.com/github/gh-skyline/stl"
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/ascii"
+	"github.com/github/gh-skyline/internal/errors"
+	"github.com/github/gh-skyline/internal/github"
+	"github.com/github/gh-skyline/internal/logger"
+	"github.com/github/gh-skyline/internal/stl"
+	"github.com/github/gh-skyline/internal/types"
 	"github.com/spf13/cobra"
 )
 
