@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/cli/go-gh/v2/pkg/auth"
 	"github.com/cli/go-gh/v2/pkg/browser"
 	"github.com/github/gh-skyline/cmd/skyline"
 	"github.com/github/gh-skyline/internal/errors"
@@ -117,6 +118,7 @@ func openGitHubProfile(targetUser string, client skyline.GitHubClientInterface, 
 		targetUser = username
 	}
 
-	profileURL := fmt.Sprintf("https://github.com/%s", targetUser)
+	hostname, _ := auth.DefaultHost()
+	profileURL := fmt.Sprintf("https://%s/%s", hostname, targetUser)
 	return b.Browse(profileURL)
 }
