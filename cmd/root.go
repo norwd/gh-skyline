@@ -26,11 +26,13 @@ var (
 	web       bool
 	artOnly   bool
 	output    string // new output path flag
+)
 
-	rootCmd = &cobra.Command{
-		Use:   "skyline",
-		Short: "Generate a 3D model of a user's GitHub contribution history",
-		Long: `GitHub Skyline creates 3D printable STL files from GitHub contribution data.
+// rootCmd is the root command for the GitHub Skyline CLI tool.
+var rootCmd = &cobra.Command{
+	Use:   "skyline",
+	Short: "Generate a 3D model of a user's GitHub contribution history",
+	Long: `GitHub Skyline creates 3D printable STL files from GitHub contribution data.
 It can generate models for specific years or year ranges for the authenticated user or an optional specified user.
 
 While the STL file is being generated, an ASCII preview will be displayed in the terminal.
@@ -46,40 +48,23 @@ ASCII Preview Legend:
 Layout:
 Each column represents one week. Days within each week are reordered vertically
 to create a "building" effect, with empty spaces (no contributions) at the top.`,
-		RunE: func(_ *cobra.Command, _ []string) error {
-			log := logger.GetLogger()
-			if debug {
-				log.SetLevel(logger.DEBUG)
-				if err := log.Debug("Debug logging enabled"); err != nil {
-					return err
-				}
-			}
+	RunE: handleSkylineCommand,
+}
 
-			client, err := github.InitializeGitHubClient()
-			if err != nil {
-				return errors.New(errors.NetworkError, "failed to initialize GitHub client", err)
-			}
+// init initializes command line flags for the skyline CLI tool.
+func init() {
+	initFlags()
+}
 
-			if web {
-				b := browser.New("", os.Stdout, os.Stderr)
-				if err := openGitHubProfile(user, client, b); err != nil {
-					fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-					os.Exit(1)
-				}
-				return nil
-			}
-
-			startYear, endYear, err := utils.ParseYearRange(yearRange)
-			if err != nil {
-				return fmt.Errorf("invalid year range: %v", err)
-			}
-
-			return skyline.GenerateSkyline(startYear, endYear, user, full, output, artOnly)
-		},
+// Execute initializes and executes the root command for the GitHub Skyline CLI.
+func Execute(_ context.Context) error {
+	if err := rootCmd.Execute(); err != nil {
+		return err
 	}
-)
+	return nil
+}
 
-// init sets up command line flags for the skyline CLI tool
+// initFlags sets up command line flags for the skyline CLI tool.
 func initFlags() {
 	flags := rootCmd.Flags()
 	flags.StringVarP(&yearRange, "year", "y", fmt.Sprintf("%d", time.Now().Year()), "Year or year range (e.g., 2024 or 2014-2024)")
@@ -91,24 +76,44 @@ func initFlags() {
 	flags.StringVarP(&output, "output", "o", "", "Output file path (optional)")
 }
 
-func init() {
-	initFlags()
-}
-
-// Execute initializes and executes the root command for the GitHub Skyline CLI
-func Execute(context context.Context) error {
-	if err := rootCmd.Execute(); err != nil {
-		return err
+// executeRootCmd is the main execution function for the root command.
+func handleSkylineCommand(_ *cobra.Command, _ []string) error {
+	log := logger.GetLogger()
+	if debug {
+		log.SetLevel(logger.DEBUG)
+		if err := log.Debug("Debug logging enabled"); err != nil {
+			return err
+		}
 	}
-	return nil
+
+	client, err := github.InitializeGitHubClient()
+	if err != nil {
+		return errors.New(errors.NetworkError, "failed to initialize GitHub client", err)
+	}
+
+	if web {
+		b := browser.New("", os.Stdout, os.Stderr)
+		if err := openGitHubProfile(user, client, b); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		return nil
+	}
+
+	startYear, endYear, err := utils.ParseYearRange(yearRange)
+	if err != nil {
+		return fmt.Errorf("invalid year range: %v", err)
+	}
+
+	return skyline.GenerateSkyline(startYear, endYear, user, full, output, artOnly)
 }
 
-// Browser interface matches browser.Browser functionality
+// Browser interface matches browser.Browser functionality.
 type Browser interface {
 	Browse(url string) error
 }
 
-// openGitHubProfile opens the GitHub profile page for the specified user or authenticated user
+// openGitHubProfile opens the GitHub profile page for the specified user or authenticated user.
 func openGitHubProfile(targetUser string, client skyline.GitHubClientInterface, b Browser) error {
 	if targetUser == "" {
 		username, err := client.GetAuthenticatedUser()

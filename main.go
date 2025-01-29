@@ -16,11 +16,11 @@ const (
 )
 
 func main() {
-	code := mainRun()
+	code := Start()
 	os.Exit(int(code))
 }
 
-func mainRun() exitCode {
+func Start() exitCode {
 	exitCode := exitOK
 	ctx := context.Background()
 
