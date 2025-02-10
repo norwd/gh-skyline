@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 // TestCreateCuboidBase verifies cuboid base generation functionality.

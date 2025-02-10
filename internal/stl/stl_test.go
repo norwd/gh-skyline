@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 // Helper function to verify STL file header

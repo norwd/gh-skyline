@@ -7,7 +7,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 // Test data setup

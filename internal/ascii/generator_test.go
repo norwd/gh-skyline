@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 func TestGenerateASCII(t *testing.T) {

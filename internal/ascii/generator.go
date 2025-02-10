@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 // ErrInvalidGrid is returned when the contribution grid is invalid
