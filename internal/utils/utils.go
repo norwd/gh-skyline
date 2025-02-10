@@ -1,4 +1,4 @@
-// package utils are utility functions for the GitHub Skyline project
+// Package utils are utility functions for the GitHub Skyline project
 package utils
 
 import (
@@ -14,7 +14,7 @@ const (
 	outputFileFormat = "%s-%s-github-skyline.stl"
 )
 
-// Parse year range string (e.g., "2024" or "2014-2024")
+// ParseYearRange parses whether a year is a single year or a range of years.
 func ParseYearRange(yearRange string) (startYear, endYear int, err error) {
 	if strings.Contains(yearRange, "-") {
 		parts := strings.Split(yearRange, "-")
