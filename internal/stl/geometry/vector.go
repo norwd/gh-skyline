@@ -4,8 +4,8 @@ package geometry
 import (
 	"math"
 
-	"github.com/github/gh-skyline/errors"
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/errors"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 // validateVector checks if a vector's components are valid numbers

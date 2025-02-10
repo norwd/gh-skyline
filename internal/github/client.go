@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/github/gh-skyline/errors"
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/errors"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 // APIClient interface defines the methods we need from the client

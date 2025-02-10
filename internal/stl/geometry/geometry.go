@@ -3,7 +3,7 @@ package geometry
 import (
 	"math"
 
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 // Model dimension constants define the basic measurements for the 3D model.

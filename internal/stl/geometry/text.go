@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/fogleman/gg"
-	"github.com/github/gh-skyline/errors"
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/errors"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 const (

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/github/gh-skyline/errors"
+	"github.com/github/gh-skyline/internal/errors"
 )
 
 //go:embed assets/*

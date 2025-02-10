@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/github/gh-skyline/testutil/fixtures"
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/testutil/fixtures"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 // MockGitHubClient implements both GitHubClientInterface and APIClient interfaces

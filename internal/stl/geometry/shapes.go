@@ -2,8 +2,8 @@
 package geometry
 
 import (
-	"github.com/github/gh-skyline/errors"
-	"github.com/github/gh-skyline/types"
+	"github.com/github/gh-skyline/internal/errors"
+	"github.com/github/gh-skyline/internal/types"
 )
 
 // CreateQuad creates two triangles forming a quadrilateral from four vertices.
