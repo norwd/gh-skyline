@@ -1,6 +1,7 @@
 module github.com/github/gh-skyline
 
 go 1.24.1
+
 require (
 	github.com/cli/go-gh/v2 v2.12.0
 	github.com/fogleman/gg v1.3.0
@@ -23,9 +24,9 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/thlib/go-timezone-local v0.0.6 // indirect
-	golang.org/x/image v0.25.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/term v0.30.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/image v0.26.0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/term v0.31.0 // indirect
+	golang.org/x/text v0.24.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
