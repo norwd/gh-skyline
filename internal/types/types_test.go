@@ -1,4 +1,4 @@
-package types
+package types //nolint:revive // package name is appropriate for this internal module
 
 import (
 	"encoding/json"

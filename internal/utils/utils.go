@@ -1,5 +1,5 @@
 // Package utils are utility functions for the GitHub Skyline project
-package utils
+package utils //nolint:revive // package name is appropriate for this internal module
 
 import (
 	"fmt"
