@@ -160,10 +160,10 @@ func getBlock(normalized float64, dayIdx, nonZeroIdx int) rune {
 		return blockSets["foundation"][blockType]
 	}
 
-	switch {
-	case dayIdx == nonZeroIdx-1: // Top block
+	switch dayIdx {
+	case nonZeroIdx - 1: // Top block
 		return blockSets["top"][blockType]
-	case dayIdx == 0: // Bottom block
+	case 0: // Bottom block
 		return blockSets["foundation"][blockType]
 	default: // Middle blocks
 		return blockSets["middle"][blockType]
