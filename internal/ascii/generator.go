@@ -64,13 +64,13 @@ func GenerateASCII(contributionGrid [][]types.ContributionDay, username string, 
 		for dayIdx := 0; dayIdx < maxDayIdx; dayIdx++ {
 			day := sortedDays[dayIdx]
 			if day.ContributionCount == -1 {
-				asciiGrid[dayIdx][weekIdx] = FutureBlock
+				asciiGrid[dayIdx][weekIdx] = FutureBlock // #nosec G602 -- bounds checked by maxDayIdx calculation above
 			} else {
 				normalized := 0.0
 				if maxContributions != 0 {
 					normalized = float64(day.ContributionCount) / float64(maxContributions)
 				}
-				asciiGrid[dayIdx][weekIdx] = getBlock(normalized, dayIdx, nonZeroCount)
+				asciiGrid[dayIdx][weekIdx] = getBlock(normalized, dayIdx, nonZeroCount) // #nosec G602 -- bounds checked by maxDayIdx calculation above
 			}
 		}
 	}

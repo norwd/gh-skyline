@@ -1,4 +1,5 @@
 // Package errors provides custom error types and utilities for the Skyline application.
+//
 //nolint:revive // Package name is intentional for clear error semantics within this project
 package errors
 
