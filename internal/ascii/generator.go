@@ -57,6 +57,10 @@ func GenerateASCII(contributionGrid [][]types.ContributionDay, username string, 
 
 		// Fill the column for this week
 		for dayIdx, day := range sortedDays {
+			// Bounds check to prevent slice index out of range
+			if dayIdx >= len(asciiGrid) {
+				continue
+			}
 			if day.ContributionCount == -1 {
 				asciiGrid[dayIdx][weekIdx] = FutureBlock
 			} else {

@@ -50,7 +50,7 @@ jobs:
     persist-credentials: false
 ```
 
-This prevents credentials from being stored in the git config.
+This prevents credentials from being stored in the Git config.
 
 ### Script Injection Prevention
 
@@ -110,7 +110,7 @@ on:
 # Node.js projects - use .node-version or .nvmrc
 - uses: actions/setup-node@v4
   with:
-    node-version-file: '.node-version'
+    node-version-file: ".node-version"
 ```
 
 ### Conditional Execution
@@ -156,7 +156,7 @@ Before finalizing any workflow changes:
 1. Check existing `.github/workflows/` for established patterns
 2. Check `.github/dependabot.yml` for dependency automation settings
 3. Verify action versions via releases pages using GitHub MCP tools
-4. Consider CI time and complexity tradeoffs
+4. Consider CI time and complexity trade-offs
 
 ## Keeping Instructions Up-to-Date
 
@@ -164,13 +164,13 @@ Before finalizing any workflow changes:
 
 ---
 
-## Anti-Patterns
+## Antipatterns
 
-| Anti-Pattern | Why It's Problematic | Better Approach |
-|--------------|---------------------|-----------------|
-| Using version tags (`v4`) | Tags can be moved/deleted; supply chain risk | Pin to full 40-char commit SHA |
-| Direct string interpolation | Script injection vulnerability | Use environment variables |
-| Workflow-level `write` perms | Excessive access if job compromised | Minimal perms at workflow, increase per-job |
-| Hardcoded language versions | Drift between local and CI | Use version files (go.mod, .node-version) |
-| Assuming SHA validity | Outdated SHAs break workflows | Verify SHA against latest release |
-| Missing YAML document start | Parser warnings and inconsistency | Always start with `---` |
+| Antipattern                  | Why It's Problematic                         | Better Approach                             |
+| ---------------------------- | -------------------------------------------- | ------------------------------------------- |
+| Using version tags (`v4`)    | Tags can be moved/deleted; supply chain risk | Pin to full 40-char commit SHA              |
+| Direct string interpolation  | Script injection vulnerability               | Use environment variables                   |
+| Workflow-level `write` perms | Excessive access if job compromised          | Minimal perms at workflow, increase per-job |
+| Hardcoded language versions  | Drift between local and CI                   | Use version files (go.mod, .node-version)   |
+| Assuming SHA validity        | Outdated SHAs break workflows                | Verify SHA against latest release           |
+| Missing YAML document start  | Parser warnings and inconsistency            | Always start with `---`                     |

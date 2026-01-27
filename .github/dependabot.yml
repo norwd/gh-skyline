@@ -10,7 +10,7 @@ updates:
     schedule:
       interval: "weekly"
     cooldown:
-      default-days: 3
+      default-days: 7
       semver-major-days: 7
     allow:
       - dependency-type: "direct"
@@ -24,8 +24,7 @@ updates:
     schedule:
       interval: "weekly"
     cooldown:
-      default-days: 3
-      semver-major-days: 7
+      default-days: 7
     groups:
       github-actions:
         patterns:
