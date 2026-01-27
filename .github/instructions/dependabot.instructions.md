@@ -20,7 +20,7 @@ updates:
 
 ## Cooldown Settings
 
-Configure cooldown periods to prevent excessive PR churn. This waits for packages to mature before creating update PRs:
+Configure cooldown periods to delay updates until packages have matured. This helps avoid churn from rapid releases. Cooldown only applies to version updates, not security updates.
 
 ```yaml
 version: 2
@@ -30,21 +30,31 @@ updates:
     schedule:
       interval: "weekly"
     cooldown:
-      default: "3d"       # Wait 3 days for all updates
-      types:
-        patch: "1d"       # Patch updates wait 1 day
-        minor: "3d"       # Minor updates wait 3 days
-        major: "7d"       # Major updates wait 7 days
+      default-days: 3           # Default cooldown for all updates
+      semver-major-days: 7      # Major version updates wait 7 days
+      semver-minor-days: 3      # Minor version updates wait 3 days
+      semver-patch-days: 1      # Patch version updates wait 1 day
+      include:
+        - "some-package*"       # Only apply cooldown to matching packages
       exclude:
-        - "critical-pkg*" # Packages to exclude from cooldown
+        - "critical-pkg*"       # Skip cooldown for these packages
 ```
 
-**Key options:**
-- `default`: Minimum age for all updates unless overridden
-- `types`: Per-semver level cooldowns (`patch`, `minor`, `major`)
-- `exclude`: Package names or wildcards to skip cooldown (for urgent updates)
+**Parameters:**
 
-**Note:** Security updates automatically bypass cooldown periods.
+| Parameter | Description |
+|-----------|-------------|
+| `default-days` | Default cooldown period for all dependencies |
+| `semver-major-days` | Cooldown for major version updates |
+| `semver-minor-days` | Cooldown for minor version updates |
+| `semver-patch-days` | Cooldown for patch version updates |
+| `include` | List of dependencies to apply cooldown (supports wildcards) |
+| `exclude` | List of dependencies excluded from cooldown (supports wildcards) |
+
+**Notes:**
+- If semver-specific days aren't defined, `default-days` is used
+- `exclude` takes precedence over `include`
+- Security updates automatically bypass cooldown
 
 ## Grouping Updates
 
@@ -73,7 +83,14 @@ groups:
     patterns:
       - "*test*"
       - "*mock*"
+    dependency-type: "development"
 ```
+
+Group parameters:
+- `patterns`: Include dependencies matching these patterns
+- `exclude-patterns`: Exclude dependencies matching these patterns
+- `dependency-type`: Limit to `development` or `production`
+- `update-types`: Limit to `minor`, `patch`, or `major`
 
 ## Filtering Dependencies
 
@@ -83,6 +100,7 @@ groups:
 allow:
   - dependency-type: "direct"    # Only direct dependencies
   - dependency-type: "indirect"  # Include transitive dependencies
+  - dependency-type: "all"       # All dependencies
 ```
 
 ### Ignore specific dependencies
@@ -106,6 +124,7 @@ ignore:
 | GitHub Actions | `github-actions` |
 | Terraform | `terraform` |
 | Cargo (Rust) | `cargo` |
+| NuGet (.NET) | `nuget` |
 
 ## Complete Example
 
@@ -117,9 +136,8 @@ updates:
     schedule:
       interval: "weekly"
     cooldown:
-      default: "3d"
-      types:
-        major: "7d"
+      default-days: 3
+      semver-major-days: 7
     allow:
       - dependency-type: "direct"
       - dependency-type: "indirect"
@@ -133,11 +151,17 @@ updates:
     schedule:
       interval: "weekly"
     cooldown:
-      default: "3d"
-      types:
-        major: "7d"
+      default-days: 3
+      semver-major-days: 7
     groups:
       github-actions:
         patterns:
           - "*"
 ```
+
+---
+
+## References
+
+- [Dependabot Configuration Options](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file) - Full configuration reference
+- [Optimizing PR Creation](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/optimizing-pr-creation-version-updates) - Cooldown and grouping strategies
