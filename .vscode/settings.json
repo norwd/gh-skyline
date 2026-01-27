@@ -1,19 +1,19 @@
 {
-  // Use golangci-lint for linting
-  "go.lintTool": "golangci-lint",
+	// Use golangci-lint for linting
+	"go.lintTool": "golangci-lint",
 
-  // Configure linter flags
-  "go.lintFlags": ["--fast"],
+	// Configure linter flags
+	"go.lintFlags": ["--fast"],
 
-  "go.formatTool": "goimports",
-  "go.useLanguageServer": true,
-  "go.testOnSave": true,
+	"go.formatTool": "goimports",
+	"go.useLanguageServer": true,
+	"go.testOnSave": true,
 
-  // Editor settings optimized for Go development
-  "[go]": {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": "always"
-    }
-  }
+	// Editor settings optimized for Go development
+	"[go]": {
+		"editor.formatOnSave": true,
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": "always"
+		}
+	}
 }

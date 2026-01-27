@@ -1,0 +1,2 @@
+# Ignore instruction files that contain technical terms in code examples
+.github/instructions/**/*.md
