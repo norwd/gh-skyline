@@ -129,24 +129,6 @@ on:
   if: always()
 ```
 
-## Dependabot Configuration
-
-### Cooldown Settings
-
-Configure cooldown periods to prevent excessive PR churn:
-
-```yaml
-version: 2
-updates:
-  - package-ecosystem: "gomod"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      cooldown:
-        default: 3
-        semver-major: 7
-```
-
 ## Verification Checklist (MANDATORY)
 
 Before finalizing any workflow changes:

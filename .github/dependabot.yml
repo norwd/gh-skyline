@@ -9,9 +9,10 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
-      cooldown:
-        default: 3
-        semver-major: 7
+    cooldown:
+      default: "3d"
+      types:
+        major: "7d"
     allow:
       - dependency-type: "direct"
       - dependency-type: "indirect"
@@ -23,9 +24,10 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
-      cooldown:
-        default: 3
-        semver-major: 7
+    cooldown:
+      default: "3d"
+      types:
+        major: "7d"
     groups:
       github-actions:
         patterns:
