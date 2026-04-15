@@ -17,6 +17,7 @@ const (
 	NetworkError    ErrorType = "NETWORK"    // Network communication errors
 	GraphQLError    ErrorType = "GRAPHQL"    // GitHub GraphQL API errors
 	STLError        ErrorType = "STL"        // STL file generation errors
+	GeneralError    ErrorType = "GENERAL"    // General errors not fitting other categories
 )
 
 // SkylineError provides structured error information including type and context
@@ -59,9 +60,9 @@ func Wrap(err error, message string) error {
 		}
 	}
 
-	// For other errors, treat as a generic error
+	// For other errors, use GeneralError to avoid misleading type attribution
 	return &SkylineError{
-		Type:    STLError, // Default to STLError for wrapped errors
+		Type:    GeneralError,
 		Message: message,
 		Err:     err,
 	}

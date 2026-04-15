@@ -151,6 +151,40 @@ func TestError(t *testing.T) {
 	}
 }
 
+func TestWarning(t *testing.T) {
+	logger, capture := setupTestLogger(t)
+
+	tests := []struct {
+		name    string
+		level   LogLevel
+		message string
+		wantLog bool
+	}{
+		{"Warning when level is DEBUG", DEBUG, "test warning message", true},
+		{"Warning when level is INFO", INFO, "test warning info level", true},
+		{"Warning when level is WARNING", WARNING, "test warning", true},
+		{"Warning when level is ERROR", ERROR, "should not show", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			capture.stdout.Reset()
+			logger.SetLevel(tt.level)
+			if err := logger.Warning("%s", tt.message); err != nil {
+				t.Errorf("Warning() error = %v", err)
+			}
+
+			hasOutput := capture.stdout.Len() > 0
+			if hasOutput != tt.wantLog {
+				t.Errorf("Warning() output = %v, want %v", hasOutput, tt.wantLog)
+			}
+			if tt.wantLog && !strings.Contains(capture.stdout.String(), tt.message) {
+				t.Errorf("Warning() output doesn't contain message: %s", tt.message)
+			}
+		})
+	}
+}
+
 func TestLogLevelString(t *testing.T) {
 	tests := []struct {
 		name     string

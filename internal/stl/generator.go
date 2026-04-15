@@ -2,7 +2,6 @@ package stl
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/github/gh-skyline/internal/errors"
 	"github.com/github/gh-skyline/internal/logger"
@@ -32,8 +31,23 @@ func GenerateSTLRange(contributions [][][]types.ContributionDay, outputPath, use
 		return errors.Wrap(err, "failed to log debug message")
 	}
 
+	if len(contributions) == 0 {
+		return errors.New(errors.ValidationError, "contributions data cannot be empty", nil)
+	}
+
 	if err := validateInput(contributions[0], outputPath, username); err != nil {
 		return errors.Wrap(err, "input validation failed")
+	}
+
+	// Apply the same size bounds to every remaining year.
+	// outputPath and username are shared across all years and have already been validated above.
+	for i := 1; i < len(contributions); i++ {
+		if len(contributions[i]) == 0 {
+			return errors.New(errors.ValidationError, fmt.Sprintf("contributions data for year index %d cannot be empty", i), nil)
+		}
+		if len(contributions[i]) > geometry.GridSize {
+			return errors.New(errors.ValidationError, fmt.Sprintf("contributions data for year index %d exceeds maximum grid size", i), nil)
+		}
 	}
 
 	dimensions, err := calculateDimensions(len(contributions))
@@ -144,49 +158,51 @@ type geometryResult struct {
 
 // generateModelGeometry orchestrates the concurrent generation of all model components.
 // It manages four parallel processes for generating the base, columns, text, and logo.
+// Channels are buffered so every goroutine can send and exit even if an error causes
+// an early return, preventing goroutine leaks.
 func generateModelGeometry(contributionsPerYear [][][]types.ContributionDay, dims modelDimensions, maxContrib int, username string, startYear, endYear int) ([]types.Triangle, error) {
 	if len(contributionsPerYear) == 0 {
 		return nil, errors.New(errors.ValidationError, "contributions data cannot be empty", nil)
 	}
 
-	// Create channels for each geometry component
-	channels := map[string]chan geometryResult{
-		"base":    make(chan geometryResult),
-		"columns": make(chan geometryResult),
-		"text":    make(chan geometryResult),
-		"image":   make(chan geometryResult),
+	// componentChannel pairs a name with its buffered result channel.
+	// Using a slice (not a map) preserves a stable iteration order so that
+	// triangles are always appended base → columns → text → image, giving
+	// reproducible STL output across runs.
+	type componentChannel struct {
+		name string
+		ch   chan geometryResult
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(channels))
+	// Buffered channels (size 1) allow each goroutine to send its result and exit
+	// regardless of whether the main goroutine reads or returns early on error.
+	components := []componentChannel{
+		{"base", make(chan geometryResult, 1)},
+		{"columns", make(chan geometryResult, 1)},
+		{"text", make(chan geometryResult, 1)},
+		{"image", make(chan geometryResult, 1)},
+	}
 
 	// Launch goroutines for each component
-	go generateBase(dims, channels["base"], &wg)
-	go generateColumnsForYearRange(contributionsPerYear, maxContrib, channels["columns"], &wg)
-	go generateText(username, startYear, endYear, dims, channels["text"], &wg)
-	go generateLogo(dims, channels["image"], &wg)
+	go generateBase(dims, components[0].ch)
+	go generateColumnsForYearRange(contributionsPerYear, maxContrib, components[1].ch)
+	go generateText(username, startYear, endYear, dims, components[2].ch)
+	go generateLogo(dims, components[3].ch)
 
-	// Collect results from all channels
+	// Collect results in declaration order for a reproducible triangle sequence.
 	modelTriangles := make([]types.Triangle, 0, estimateTriangleCount(contributionsPerYear[0])*len(contributionsPerYear))
-	for componentName := range channels {
-		result := <-channels[componentName]
+	for _, component := range components {
+		result := <-component.ch
 		if result.err != nil {
-			return nil, errors.Wrap(result.err, fmt.Sprintf("failed to generate %s geometry", componentName))
+			return nil, errors.Wrap(result.err, fmt.Sprintf("failed to generate %s geometry", component.name))
 		}
 		modelTriangles = append(modelTriangles, result.triangles...)
-	}
-
-	// Clean up
-	wg.Wait()
-	for _, ch := range channels {
-		close(ch)
 	}
 
 	return modelTriangles, nil
 }
 
-func generateBase(dims modelDimensions, ch chan<- geometryResult, wg *sync.WaitGroup) {
-	defer wg.Done()
+func generateBase(dims modelDimensions, ch chan<- geometryResult) {
 	baseTriangles, err := geometry.CreateCuboidBase(dims.innerWidth, dims.innerDepth)
 
 	if err != nil {
@@ -202,8 +218,7 @@ func generateBase(dims modelDimensions, ch chan<- geometryResult, wg *sync.WaitG
 }
 
 // generateText creates 3D text geometry for the model
-func generateText(username string, startYear int, endYear int, dims modelDimensions, ch chan<- geometryResult, wg *sync.WaitGroup) {
-	defer wg.Done()
+func generateText(username string, startYear int, endYear int, dims modelDimensions, ch chan<- geometryResult) {
 	embossedYear := fmt.Sprintf("%d", endYear)
 
 	// If start year and end year are the same, only show one year
@@ -225,8 +240,7 @@ func generateText(username string, startYear int, endYear int, dims modelDimensi
 }
 
 // generateLogo handles the generation of the GitHub logo geometry
-func generateLogo(dims modelDimensions, ch chan<- geometryResult, wg *sync.WaitGroup) {
-	defer wg.Done()
+func generateLogo(dims modelDimensions, ch chan<- geometryResult) {
 	logoTriangles, err := geometry.GenerateImageGeometry(dims.innerWidth, geometry.BaseHeight)
 	if err != nil {
 		// Log warning and continue without logo instead of failing
@@ -257,8 +271,7 @@ func estimateTriangleCount(contributions [][]types.ContributionDay) int {
 }
 
 // generateColumnsForYearRange generates contribution columns for multiple years
-func generateColumnsForYearRange(contributionsPerYear [][][]types.ContributionDay, maxContrib int, ch chan<- geometryResult, wg *sync.WaitGroup) {
-	defer wg.Done()
+func generateColumnsForYearRange(contributionsPerYear [][][]types.ContributionDay, maxContrib int, ch chan<- geometryResult) {
 	var yearTriangles []types.Triangle
 
 	// Process years in reverse order so most recent year is at the front
@@ -267,6 +280,8 @@ func generateColumnsForYearRange(contributionsPerYear [][][]types.ContributionDa
 		triangles, err := geometry.CreateContributionGeometry(contributionsPerYear[i], yearOffset, maxContrib)
 		if err != nil {
 			if logErr := logger.GetLogger().Warning("Failed to generate column geometry for year %d: %v. Skipping year.", i, err); logErr != nil {
+				// logErr is secondary; report the original geometry error to the caller.
+				ch <- geometryResult{triangles: []types.Triangle{}, err: err}
 				return
 			}
 			continue
@@ -277,33 +292,3 @@ func generateColumnsForYearRange(contributionsPerYear [][][]types.ContributionDa
 	ch <- geometryResult{triangles: yearTriangles}
 }
 
-// CreateContributionGeometry generates geometry for a single year's worth of contributions
-func CreateContributionGeometry(contributions [][]types.ContributionDay, yearIndex int, maxContrib int) []types.Triangle {
-	var triangles []types.Triangle
-
-	// Calculate the Y offset for this year's grid
-	// Each subsequent year is placed further back (larger Y value)
-	baseYOffset := float64(yearIndex) * (geometry.YearOffset + geometry.YearSpacing)
-
-	// Generate contribution columns
-	for weekIdx, week := range contributions {
-		for dayIdx, day := range week {
-			if day.ContributionCount > 0 {
-				height := geometry.NormalizeContribution(day.ContributionCount, maxContrib)
-				x := float64(weekIdx) * geometry.CellSize
-				y := baseYOffset + float64(dayIdx)*geometry.CellSize
-
-				columnTriangles, err := geometry.CreateColumn(x, y, height, geometry.CellSize)
-				if err != nil {
-					if logErr := logger.GetLogger().Warning("Failed to generate column geometry: %v. Skipping column.", err); logErr != nil {
-						return nil
-					}
-					continue
-				}
-				triangles = append(triangles, columnTriangles...)
-			}
-		}
-	}
-
-	return triangles
-}

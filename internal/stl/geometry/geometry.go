@@ -29,11 +29,8 @@ const (
 	FallbackFont = "monasans-regular.ttf"
 )
 
-// Additional constants for year range styling
-const (
-	YearSpacing float64 = 0.0 // Remove gap between years
-	YearOffset  float64 = 7.0 * CellSize
-)
+// YearOffset defines the depth spacing between successive years in a multi-year model.
+const YearOffset float64 = 7.0 * CellSize
 
 // ModelDimensions defines the inner dimensions of the model.
 type ModelDimensions struct {
@@ -67,7 +64,7 @@ func CreateContributionGeometry(contributions [][]types.ContributionDay, yearInd
 	var triangles []types.Triangle
 
 	// Base Y offset includes padding and positions each year accordingly
-	baseYOffset := 2*CellSize + float64(yearIndex)*7*CellSize
+	baseYOffset := 2*CellSize + float64(yearIndex)*YearOffset
 
 	for weekIdx, week := range contributions {
 		for dayIdx, day := range week {

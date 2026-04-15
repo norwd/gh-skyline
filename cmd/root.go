@@ -94,8 +94,7 @@ func handleSkylineCommand(_ *cobra.Command, _ []string) error {
 	if web {
 		b := browser.New("", os.Stdout, os.Stderr)
 		if err := openGitHubProfile(user, client, b); err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			os.Exit(1)
+			return err
 		}
 		return nil
 	}

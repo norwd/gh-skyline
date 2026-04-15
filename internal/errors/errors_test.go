@@ -59,7 +59,7 @@ func TestWrap(t *testing.T) {
 			name:    "wrap standard error",
 			err:     errors.New("original error"),
 			message: "wrapped message",
-			want:    "[STL] wrapped message: original error",
+			want:    "[GENERAL] wrapped message: original error",
 		},
 		{
 			name: "wrap SkylineError preserves type",
