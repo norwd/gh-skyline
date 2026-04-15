@@ -4,7 +4,6 @@ package skyline
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/github/gh-skyline/internal/ascii"
@@ -67,26 +66,7 @@ func GenerateSkyline(startYear, endYear int, targetUser string, full bool, outpu
 				return warnErr
 			}
 		} else {
-			if year == startYear {
-				// For first year, show full ASCII art including header
-				fmt.Println(asciiArt)
-			} else {
-				// For subsequent years, skip the header
-				lines := strings.Split(asciiArt, "\n")
-				gridStart := 0
-				for i, line := range lines {
-					containsEmptyBlock := strings.Contains(line, string(ascii.EmptyBlock))
-					containsFoundationLow := strings.Contains(line, string(ascii.FoundationLow))
-					isNotOnlyEmptyBlocks := strings.Trim(line, string(ascii.EmptyBlock)) != ""
-
-					if (containsEmptyBlock || containsFoundationLow) && isNotOnlyEmptyBlocks {
-						gridStart = i
-						break
-					}
-				}
-				// Print just the grid and user info
-				fmt.Println(strings.Join(lines[gridStart:], "\n"))
-			}
+			fmt.Println(asciiArt)
 		}
 	}
 

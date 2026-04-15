@@ -137,11 +137,13 @@ func (c *Client) GetUserJoinYear(username string) (int, error) {
 		return 0, errors.New(errors.NetworkError, "failed to fetch user's join date", err)
 	}
 
-	// Parse the join date
-	joinYear := response.User.CreatedAt.Year()
-	if joinYear == 0 {
+	// Validate that the API returned a real creation date
+	if response.User.CreatedAt.IsZero() {
 		return 0, errors.New(errors.ValidationError, "invalid join date received from GitHub API", nil)
 	}
+
+	// Parse the join date
+	joinYear := response.User.CreatedAt.Year()
 
 	return joinYear, nil
 }

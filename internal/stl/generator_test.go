@@ -4,9 +4,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 	"testing"
 
+	"github.com/github/gh-skyline/internal/stl/geometry"
 	"github.com/github/gh-skyline/internal/types"
 )
 
@@ -156,6 +156,21 @@ func TestGenerateSTLRange(t *testing.T) {
 			startYear:     2023,
 			endYear:       2023,
 			wantErr:       true,
+		},
+		{
+			name: "year index 1 exceeds GridSize",
+			contributions: func() [][][]types.ContributionDay {
+				oversized := make([][]types.ContributionDay, geometry.GridSize+1)
+				for i := range oversized {
+					oversized[i] = make([]types.ContributionDay, 7)
+				}
+				return [][][]types.ContributionDay{createTestContributions(), oversized}
+			}(),
+			outputPath: outputPath,
+			username:   "testuser",
+			startYear:  2022,
+			endYear:    2023,
+			wantErr:    true,
 		},
 	}
 
@@ -323,11 +338,9 @@ func TestGenerateBase(t *testing.T) {
 	if err != nil {
 		t.Fatalf("calculateDimensions() error = %v", err)
 	}
-	ch := make(chan geometryResult)
-	var wg sync.WaitGroup
-	wg.Add(1)
+	ch := make(chan geometryResult, 1)
 
-	go generateBase(dims, ch, &wg)
+	go generateBase(dims, ch)
 
 	result := <-ch
 	if result.err != nil {
@@ -343,11 +356,9 @@ func TestGenerateText(t *testing.T) {
 	if err != nil {
 		t.Fatalf("calculateDimensions() error = %v", err)
 	}
-	ch := make(chan geometryResult)
-	var wg sync.WaitGroup
-	wg.Add(1)
+	ch := make(chan geometryResult, 1)
 
-	go generateText("testuser", 2023, 2023, dims, ch, &wg)
+	go generateText("testuser", 2023, 2023, dims, ch)
 
 	result := <-ch
 	if result.err != nil {
@@ -372,22 +383,18 @@ func TestGenerateColumnsForYearRange(t *testing.T) {
 		contributionsPerYear[i] = createTestContributions()
 	}
 
-	ch := make(chan geometryResult)
-	var wg sync.WaitGroup
-	wg.Add(1)
+	ch := make(chan geometryResult, 1)
 
 	maxContrib := 10 // Set a known max contribution value
 
 	// Test the goroutine
-	go generateColumnsForYearRange(contributionsPerYear, maxContrib, ch, &wg)
+	go generateColumnsForYearRange(contributionsPerYear, maxContrib, ch)
 
 	// Collect the result
 	result := <-ch
 	if len(result.triangles) == 0 {
 		t.Error("generateColumnsForYearRange() returned no triangles")
 	}
-
-	wg.Wait()
 }
 
 func TestCreateContributionGeometry(t *testing.T) {
@@ -395,20 +402,28 @@ func TestCreateContributionGeometry(t *testing.T) {
 	yearIndex := 0
 	maxContrib := 10
 
-	triangles := CreateContributionGeometry(contributions, yearIndex, maxContrib)
-
+	triangles, err := geometry.CreateContributionGeometry(contributions, yearIndex, maxContrib)
+	if err != nil {
+		t.Fatalf("CreateContributionGeometry() error = %v", err)
+	}
 	if len(triangles) == 0 {
 		t.Error("CreateContributionGeometry() returned no triangles")
 	}
 
 	// Test with empty contributions
-	emptyTriangles := CreateContributionGeometry([][]types.ContributionDay{}, yearIndex, maxContrib)
+	emptyTriangles, err := geometry.CreateContributionGeometry([][]types.ContributionDay{}, yearIndex, maxContrib)
+	if err != nil {
+		t.Fatalf("CreateContributionGeometry() with empty input error = %v", err)
+	}
 	if len(emptyTriangles) != 0 {
 		t.Error("CreateContributionGeometry() should return empty slice for empty contributions")
 	}
 
 	// Test with zero max contribution
-	zeroMaxTriangles := CreateContributionGeometry(contributions, yearIndex, 0)
+	zeroMaxTriangles, err := geometry.CreateContributionGeometry(contributions, yearIndex, 0)
+	if err != nil {
+		t.Fatalf("CreateContributionGeometry() with zero max error = %v", err)
+	}
 	if len(zeroMaxTriangles) == 0 {
 		t.Error("CreateContributionGeometry() should still generate triangles with zero max contribution")
 	}
@@ -455,18 +470,15 @@ func TestGenerateLogo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("calculateDimensions() error = %v", err)
 	}
-	ch := make(chan geometryResult)
-	var wg sync.WaitGroup
-	wg.Add(1)
+	ch := make(chan geometryResult, 1)
 
-	go generateLogo(dims, ch, &wg)
+	go generateLogo(dims, ch)
 
 	result := <-ch
 	// Even if image file is not found, result should not be nil
 	if result.triangles == nil {
 		t.Error("generateLogo() returned nil triangles slice")
 	}
-	wg.Wait()
 }
 
 func TestCalculateDimensions(t *testing.T) {
@@ -517,18 +529,15 @@ func TestGenerateText_WithYearRange(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ch := make(chan geometryResult)
-			var wg sync.WaitGroup
-			wg.Add(1)
+			ch := make(chan geometryResult, 1)
 
-			go generateText(tt.username, tt.startYear, tt.endYear, dims, ch, &wg)
+			go generateText(tt.username, tt.startYear, tt.endYear, dims, ch)
 
 			result := <-ch
 			// Even if font generation fails, result should not be nil
 			if result.triangles == nil {
 				t.Errorf("%s: generateText() returned nil triangles slice", tt.name)
 			}
-			wg.Wait()
 			close(ch)
 		})
 	}
@@ -555,18 +564,15 @@ func TestGenerateColumnsForYearRange_Extended(t *testing.T) {
 				contributionsPerYear[i] = createTestContributions()
 			}
 
-			ch := make(chan geometryResult)
-			var wg sync.WaitGroup
-			wg.Add(1)
+			ch := make(chan geometryResult, 1)
 
-			go generateColumnsForYearRange(contributionsPerYear, tt.maxContrib, ch, &wg)
+			go generateColumnsForYearRange(contributionsPerYear, tt.maxContrib, ch)
 
 			result := <-ch
 			if tt.expectTriangles && len(result.triangles) == 0 {
 				t.Error("generateColumnsForYearRange() returned no triangles when triangles were expected")
 			}
 
-			wg.Wait()
 			close(ch)
 		})
 	}
@@ -579,19 +585,16 @@ func TestResourceHandling(t *testing.T) {
 		if err != nil {
 			t.Fatalf("calculateDimensions() error = %v", err)
 		}
-		ch := make(chan geometryResult)
-		var wg sync.WaitGroup
-		wg.Add(1)
+		ch := make(chan geometryResult, 1)
 
 		// This should log a warning but continue
-		go generateText("testuser", 2023, 2023, dims, ch, &wg)
+		go generateText("testuser", 2023, 2023, dims, ch)
 
 		result := <-ch
 		// Even with missing fonts, we should get a valid (possibly empty) result
 		if result.triangles == nil {
 			t.Error("generateText() returned nil instead of empty slice with missing fonts")
 		}
-		wg.Wait()
 	})
 
 	// Test handling of missing image file
@@ -600,19 +603,16 @@ func TestResourceHandling(t *testing.T) {
 		if err != nil {
 			t.Fatalf("calculateDimensions() error = %v", err)
 		}
-		ch := make(chan geometryResult)
-		var wg sync.WaitGroup
-		wg.Add(1)
+		ch := make(chan geometryResult, 1)
 
 		// This should log a warning but continue
-		go generateLogo(dims, ch, &wg)
+		go generateLogo(dims, ch)
 
 		result := <-ch
 		// Even with missing image, we should get a valid (possibly empty) result
 		if result.triangles == nil {
 			t.Error("generateLogo() returned nil instead of empty slice with missing image")
 		}
-		wg.Wait()
 	})
 
 	// Test full model generation with missing resources

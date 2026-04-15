@@ -2,7 +2,6 @@ package github
 
 import (
 	"testing"
-	"time"
 
 	"github.com/github/gh-skyline/internal/errors"
 	"github.com/github/gh-skyline/internal/testutil/mocks"
@@ -57,7 +56,6 @@ func TestGetUserJoinYear(t *testing.T) {
 	tests := []struct {
 		name          string
 		username      string
-		mockResponse  time.Time
 		mockError     error
 		expectedYear  int
 		expectedError bool
@@ -65,7 +63,6 @@ func TestGetUserJoinYear(t *testing.T) {
 		{
 			name:          "successful response",
 			username:      "testuser",
-			mockResponse:  time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC),
 			expectedYear:  2015,
 			expectedError: false,
 		},
@@ -78,6 +75,12 @@ func TestGetUserJoinYear(t *testing.T) {
 			name:          "network error",
 			username:      "testuser",
 			mockError:     errors.New(errors.NetworkError, "network error", nil),
+			expectedError: true,
+		},
+		{
+			name:     "zero join date",
+			username: "testuser",
+			// expectedYear is 0, so mock.Do leaves CreatedAt as zero time.Time, triggering IsZero guard
 			expectedError: true,
 		},
 	}
