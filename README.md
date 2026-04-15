@@ -111,7 +111,7 @@ gh skyline --user mona --web
 
 ## ASCII Art
 
-The extension generates ASCII art in terminal while loading, a unique and fun way to vizualise your contribution data while you wait! Each column represents one week. Days within each week are reordered vertically to create a "building" effect, with empty spaces (no contributions) at the top.
+The extension generates ASCII art in terminal while loading, a unique and fun way to visualise your contribution data while you wait! Each column represents one week. Days within each week are reordered vertically to create a "building" effect, with empty spaces (no contributions) at the top.
 
 - `' '` Empty/Sky: No contributions
 - `'.'` Future dates: What contributions could you make?
