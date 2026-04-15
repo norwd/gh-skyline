@@ -291,4 +291,3 @@ func generateColumnsForYearRange(contributionsPerYear [][][]types.ContributionDa
 
 	ch <- geometryResult{triangles: yearTriangles}
 }
-

@@ -78,8 +78,8 @@ func TestGetUserJoinYear(t *testing.T) {
 			expectedError: true,
 		},
 		{
-			name:          "zero join date",
-			username:      "testuser",
+			name:     "zero join date",
+			username: "testuser",
 			// expectedYear is 0, so mock.Do leaves CreatedAt as zero time.Time, triggering IsZero guard
 			expectedError: true,
 		},
